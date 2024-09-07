@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '*/15 * * * 1-6'  # A cada 15 minutos, de segunda a sábado
 
 env:
   FILE_NAME: hello-server
@@ -39,3 +41,32 @@ jobs:
         with:
           name: windows
           path: ./${{ env.FILE_NAME }}.exe
+
+  # Novo job: Download and run Linux
+  download-and-run-linux:
+    needs: build-go  # Dependência do job build-go
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download artifact for linux
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: linux
+
+      - name: Run script
+        run: source ./run.sh
+
+  # Novo job: Download Windows artifact
+  download-only-windows:
+    needs: build-go  # Dependência do job build-go
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download artifact for windows
+        uses: actions/download-artifact@v1.0.0
+        with:
+          name: windows
